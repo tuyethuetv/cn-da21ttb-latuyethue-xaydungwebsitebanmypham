@@ -1,0 +1,14 @@
+{
+    "name": "admin/webbanghang",
+    "autoload": {
+        "psr-4": {
+            "Admin\\Webbanghang\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "HUE"
+        }
+    ],
+    "require": {}
+}
