@@ -1,4 +1,5 @@
 <!-- Menu Stop -->
+<a class="btn btn-danger mt-1" href="./Admin/authen/logout.php" role="button" style="color: white; width: auto;text-align: left;">Thoát</a>
 <footer style="background-color: #ffaad4 !important;">
 	<div class="container">
 		<div class="row">

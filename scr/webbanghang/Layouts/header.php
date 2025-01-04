@@ -118,14 +118,13 @@
 	  <li class="nav-item">
 	    <a class="nav-link" href="contact.php">Liên Hệ</a>
 	  </li>
-	  <li class="nav-item text-nowrap">
-            <a class="nav-link" href="./Admin/authen/logout.php">Thoát</a>
-        </li>
 		<li class="nav-item ml-auto">
-			<form class="form-inline" method="GET" action="search.php">
-				<input class="form-control mr-sm-2" type="search" name="query" placeholder="Tìm kiếm sản phẩm..." aria-label="Search">
-				<!-- <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Tìm Kiếm</button> -->
-			</form>
+			<div style="display: inline-block;">
+				<form class="form-inline" method="GET" action="search.php" style="text-align: left;">
+					<input class="form-control mr-sm-2" type="search" name="query" placeholder="Tìm kiếm sản phẩm..." aria-label="Search">
+					<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Tìm Kiếm</button>
+				</form>
+			</div>
 		</li>
 	</ul>
 </div>

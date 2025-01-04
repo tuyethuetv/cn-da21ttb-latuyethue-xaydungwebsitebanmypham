@@ -89,6 +89,12 @@
                             Quản Lý Người Dùng
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?=$baseUrl?>statistical">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        Thống Kê Người Truy Cập
+                        </a>
+                    </li>
                 </ul>
             </div>
         </nav>

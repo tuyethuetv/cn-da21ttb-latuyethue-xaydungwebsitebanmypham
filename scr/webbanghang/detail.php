@@ -8,33 +8,102 @@ $product = executeResult($sql, true);
 $category_id = $product['category_id'];
 $sql = "select product.*, category.name as category_name from product left join category on product.category_id = category.id where product.category_id = $category_id order by product.updated_at desc limit 0,4";
 
+// Lấy đánh giá từ cơ sở dữ liệu
+$sql = "SELECT r.*, u.fullname FROM reviews r JOIN user u ON r.user_id = u.id WHERE r.product_id = $productId ORDER BY r.created_at DESC";
+$reviews = executeResult($sql);
+
 $lastestItems = executeResult($sql);
 ?>
 <style type="text/css">
-	.breadcrumb {
-		background-color: transparent;
-		padding: 0px;
-	}
+.review-form {
+    max-width: 700px; /* Tăng chiều rộng tối đa */
+    margin: 30px auto;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    font-family: Arial, sans-serif;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-	.breadcrumb li {
-		margin-right: 10px;
-	}
+.review-form:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
 
-	#sdg-1,
-	#sdg-2,
-	#sdg-3,
-	#sdg-4,
-	#sdg-5 {
-		fill: #ffa5008a !important;
-	}
+.review-form .form-group {
+    margin-bottom: 20px;
+}
 
-	#sdg-1:hover,
-	#sdg-2:hover,
-	#sdg-3:hover,
-	#sdg-4:hover,
-	#sdg-5:hover {
-		fill: rgba(255, 166, 0, 1) !important;
-	}
+.review-form label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #333;
+}
+
+.review-form select,
+.review-form textarea {
+    width: 100%;
+    padding: 15px; /* Tăng padding để nội dung thoáng hơn */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #fff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.review-form select:focus,
+.review-form textarea:focus {
+    border-color: rgb(255, 0, 170);
+    box-shadow: 0 0 10px rgba(255, 0, 170, 0.7);
+    outline: none;
+}
+
+.review-form .star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Tăng khoảng cách giữa các ngôi sao */
+    margin-bottom: 20px;
+}
+
+.review-form .star {
+    font-size: 30px; /* Tăng kích thước sao */
+    cursor: pointer;
+    color: #ccc;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.review-form .star.selected,
+.review-form .star:hover {
+    color: rgb(255, 0, 170);
+    transform: scale(1.3); /* Phóng to sao khi chọn hoặc hover */
+}
+
+.review-form button {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    background-color: rgb(255, 0, 170);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-form button:hover {
+    background-color: rgb(220, 0, 150);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.review-form button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
 </style>
 <div class="container" style="margin-top: 20px; margin-bottom: 20px;">
 	<div class="row">
@@ -48,35 +117,31 @@ $lastestItems = executeResult($sql);
 				<li> / <?= $product['title'] ?></li>
 			</ul>
 			<h2><?= $product['title'] ?></h2>
-			<ul style="display: flex; list-style-type: none; margin: 0px; padding: 0px;">
-				<li style="color: orange; font-size: 13pt; padding-top: 2px; margin-right: 5px;">5.0</li>
-				<li style="color: orange; padding: 2px;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-						<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-					</svg>
-				</li>
-				<li style="color: orange; padding: 2px;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-						<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-					</svg>
-				</li>
-				<li style="color: orange; padding: 2px;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-						<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-					</svg>
-				</li>
-				<li style="color: orange; padding: 2px;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-						<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-					</svg>
-				</li>
-				<li style="color: orange; padding: 2px;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-						<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-					</svg>
-				</li>
-				<li style="margin-left: 20px; border-left: solid #dad7d7 1px; font-size: 13pt; padding-top: 3px; padding-left: 20px;">7,635 Đã Bán</li>
-			</ul>
+			<?php
+			// Tính tổng số sao và số lượt đánh giá
+			$totalStars = 0;
+			$totalReviews = count($reviews);
+
+			foreach ($reviews as $review) {
+				$totalStars += $review['rating'];
+			}
+
+			// Tính trung bình sao
+			$averageRating = $totalReviews > 0 ? round($totalStars / $totalReviews, 1) : 0;
+
+			// Hiển thị kết quả
+			?>
+			<div style="display: flex; align-items: center; margin-bottom: 20px;">
+				<span style="font-size: 24px; font-weight: bold; color: orange; margin-right: 10px;"><?= $averageRating ?></span>
+				<div>
+					<?php for ($i = 1; $i <= 5; $i++): ?>
+						<span style="color: <?= $i <= $averageRating ? 'orange' : '#ccc'; ?>;">★</span>
+					<?php endfor; ?>
+				</div>
+				<span style="margin-left: 10px; font-size: 14px; color: #555;">
+					(<?= $totalReviews ?> lượt đánh giá)
+				</span>
+			</div>
 			<p style="font-size: 30px; color: red; margin-top: 15px; margin-bottom: 15px;">
 				<?= number_format($product['discount']) ?> VND
 			</p>
@@ -103,66 +168,59 @@ $lastestItems = executeResult($sql);
 			</div>
 		</div>
 		<div class="col-md-12">
-			<h3>Đánh giá</h3>
-			<?php
-			$user = $_SESSION['user'];
-			?>
-			<form>
-				<div class="mb-3">
-					<label for="exampleInputEmail1" style="font-size: 30px;" class="form-label"><?php echo $user['fullname'] ?></label>
-					<ul style="display: flex; list-style-type: none; margin: 0 0 15px 0; padding: 0px;">
-						<li style="color: orange; font-size: 13pt; padding-top: 2px; margin-right: 5px;">5.0</li>
-						<li style="color: orange; padding: 2px;">
-							<svg id="sdg-1" xmlns="http://www.w3.org/2000/svg" width="35" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-								<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-							</svg>
-						</li>
-						<li style="color: orange; padding: 2px;">
-							<svg id="sdg-2" xmlns="http://www.w3.org/2000/svg" width="35" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-								<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-							</svg>
-						</li>
-						<li style="color: orange; padding: 2px;">
-							<svg id="sdg-3" xmlns="http://www.w3.org/2000/svg" width="35" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-								<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-							</svg>
-						</li>
-						<li style="color: orange; padding: 2px;">
-							<svg id="sdg-4" xmlns="http://www.w3.org/2000/svg" width="35" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-								<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-							</svg>
-						</li>
-						<li style="color: orange; padding: 2px;">
-							<svg id="sdg-5" xmlns="http://www.w3.org/2000/svg" width="35" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-								<path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-							</svg>
-						</li>
-					</ul>
-					<input type="text" class="form-control" id="desc" placeholder="Nhập gì đi">
+			<h3>Đánh giá sản phẩm</h3>
+			<?php foreach ($reviews as $review): ?>
+				<div style="border-bottom: 1px solid #ddd; padding: 10px 0;">
+					<strong><?= htmlspecialchars($review['fullname']) ?></strong>
+					<div>
+						<?php for ($i = 1; $i <= 5; $i++): ?>
+							<span style="color: <?= $i <= $review['rating'] ? 'orange' : '#ccc'; ?>;">★</span>
+						<?php endfor; ?>
+					</div>
+					<p><?= nl2br(htmlspecialchars($review['comment'])) ?></p>
+					<small><?= date('d/m/Y H:i', strtotime($review['created_at'])) ?></small>
 				</div>
-
-				<button type="submit" class="btn" style="width: 10%;border-radius: 0px;background-color: #ff69b4;color: white;border: none;">Đánh giá</button>
-			</form>
+			<?php endforeach; ?>
 		</div>
-	</div>
-</div>
-<div class="container" style="margin-top: 20px; margin-bottom: 20px;">
-	<h1 style="text-align: center; margin-top: 20px; margin-bottom: 20px;">SẢN PHẨM LIÊN QUAN</h1>
-	<div class="row">
-		<?php
-		foreach ($lastestItems as $item) {
-			echo '<div class="col-md-3 col-6 product-item">
-					<a href="detail.php?id=' . $item['id'] . '"><img src="' . $item['thumbnail'] . '" style="width: 100%; height: 220px;"></a>
-					<p style="font-weight: bold;">' . $item['category_name'] . '</p>
-					<a href="detail.php?id=' . $item['id'] . '"><p style="font-weight: bold;">' . $item['title'] . '</p></a>
-					<p style="color: red; font-weight: bold;">' . number_format($item['discount']) . ' VND</p>
-					<p><button class="btn" onclick="addCart(' . $item['id'] . ', 1)" style="width: 100%; border-radius: 0px;background-color: #ff69b4;color: white;"><i class="bi bi-cart-plus-fill"></i> Thêm giỏ hàng</button></p>
-				</div>';
-		}
-		?>
-	</div>
-</div>
+		<form class="review-form" method="post" action="submit_review.php">
+			<div class="form-group">
+				<label for="rating">Đánh giá:</label>
+				<div class="star-rating">
+					<span class="star" data-value="1">&#9733;</span>
+					<span class="star" data-value="2">&#9733;</span>
+					<span class="star" data-value="3">&#9733;</span>
+					<span class="star" data-value="4">&#9733;</span>
+					<span class="star" data-value="5">&#9733;</span>
+				</div>
+				<input type="hidden" name="rating" id="rating" required>
+			</div>
+			<div class="form-group">
+				<label for="comment">Bình luận:</label>
+				<textarea name="comment" id="comment" class="form-control" rows="3" required placeholder="Nhập bình luận của bạn..."></textarea>
+			</div>
+			<input type="hidden" name="product_id" value="<?= $productId ?>">
+			<button type="submit">Gửi đánh giá</button>
+		</form>
 
+		<script>
+			const stars = document.querySelectorAll('.star');
+			const ratingInput = document.getElementById('rating');
+
+			stars.forEach(star => {
+				star.addEventListener('click', () => {
+					stars.forEach(s => s.classList.remove('selected'));
+					star.classList.add('selected');
+					ratingInput.value = star.getAttribute('data-value');
+				});
+
+				star.addEventListener('mouseover', () => {
+					stars.forEach(s => s.classList.remove('selected'));
+					star.classList.add('selected');
+				});
+			});
+		</script>
+	</div>
+</div>
 <script type="text/javascript">
 	function addMoreCart(delta) {
 		num = parseInt($('[name=num]').val())

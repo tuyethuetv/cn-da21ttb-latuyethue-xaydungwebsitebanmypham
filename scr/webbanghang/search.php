@@ -29,20 +29,26 @@ $searchResults = executeResult($sql);
 		<?php
 		if (count($searchResults) > 0) {
 			foreach ($searchResults as $product) {
-				echo '<div class="col-md-3">
-						<div class="card mb-4">
-							<img src="' . $product['thumbnail'] . '" class="card-img-top" alt="' . htmlspecialchars($product['title']) . '">
-							<div class="card-body">
-								<h5 class="card-title">' . $product['title'] . '</h5>
-								<p class="card-text">' . substr($product['description'], 0, 50) . '...</p>
-								<a href="detail.php?id=' . $product['id'] . '" class="btn btn-primary">Xem Chi Tiết</a>
-							</div>
-						</div>
+				echo '<div class="col-md-3 col-6 product-item">
+						<a href="detail.php?id=' . $product['id'] . '">
+							<img src="' . $product['thumbnail'] . '" style="width: 100%; height: 220px;" alt="' . htmlspecialchars($product['title']) . '">
+						</a>
+						<a href="detail.php?id=' . $product['id'] . '">
+							<p style="font-weight: bold;">' . htmlspecialchars($product['title']) . '</p>
+						</a>
+						<p style="color: red; font-weight: bold;">' . number_format($product['discount']) . ' VND</p>
+						<p>
+							<button class="btn" onclick="addCart(' . $product['id'] . ', 1)" 
+									style="width: 100%; border-radius: 0px; background-color: #ff69b4; color: white; border: none;">
+								<i class="bi bi-cart-plus-fill"></i> Thêm giỏ hàng
+							</button>
+						</p>
 					</div>';
 			}
 		} else {
 			echo '<p>Không tìm thấy sản phẩm nào phù hợp.</p>';
 		}
+		
 		?>
 	</div>
 </div>
