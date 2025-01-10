@@ -9,7 +9,7 @@
 
 <div class="row" style="margin-top: 20px;">
 	<div class="col-md-12 table-responsive">
-		<h3>Quản Lý Sản Phẩm</h3>
+		<h1 class="text-center text-primary mb-4">Quản Lý Sản Phẩm</h1>
 
 		<a href="edit.php"><button class="btn btn-success">Thêm Sản Phẩm</button></a>
 

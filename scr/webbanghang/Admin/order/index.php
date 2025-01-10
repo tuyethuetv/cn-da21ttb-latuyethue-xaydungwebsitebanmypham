@@ -9,7 +9,8 @@
 
 <div class="row" style="margin-top: 20px;">
 	<div class="col-md-12 table-responsive">
-		<h3>Quản Lý Đơn Hàng</h3>
+		<h1 class="text-center text-primary mb-4">Quản Lý Đơn Hàng</h1>
+		<a href="thongke.php"><button class="btn btn-success"> Thống kê các sản phẩm đã bán </button></a>
 
 		<table class="table table-bordered table-hover" style="margin-top: 20px;">
 			<thead>

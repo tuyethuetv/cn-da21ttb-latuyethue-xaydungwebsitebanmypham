@@ -1,66 +1,102 @@
 <?php
-    $title = 'Dashboard Page';
-    $baseUrl = '';
-    require_once('layout/header.php');
+$title = 'Dashboard Page';
+$baseUrl = '';
+require_once('layout/header.php');
+
+// Lấy tổng số người dùng
+$sql_count = "SELECT COUNT(*) AS total_users FROM user WHERE deleted = 0";
+$result_count = executeResult($sql_count);
+$total_users = $result_count[0]['total_users'] ?? 0; // Lấy số lượng người dùng từ câu truy vấn
+
+// Lấy dữ liệu doanh thu theo ngày
+$sql = "SELECT DATE(order_date) AS order_day, SUM(total_money) AS total_revenue 
+        FROM orders 
+        GROUP BY DATE(order_date) 
+        ORDER BY order_day";
+$results = executeResult($sql);
+
+$days = [];
+$revenues = [];
+$totalRevenue = 0;
+
+if (!empty($results)) {
+    foreach ($results as $row) {
+        $days[] = $row['order_day'];
+        $revenues[] = $row['total_revenue'];
+        $totalRevenue += $row['total_revenue'];
+    }
+}
+
+// Lấy tổng số đơn hàng
+$sqlOrders = "SELECT COUNT(*) AS total_orders FROM orders";
+$orderResult = executeResult($sqlOrders, true);
+$totalOrders = $orderResult['total_orders'] ?? 0;
+
+// Tính tổng số ngày
+$totalDays = count($days);
+
+// Chuyển dữ liệu thành JSON để sử dụng trong JavaScript
+$days = json_encode($days);
+$revenues = json_encode($revenues);
 ?>
 
 <div class="container-fluid mt-4">
+    <!-- Tiêu đề -->
     <div class="row">
         <div class="col-md-12">
-            <h1 class="text-center">Dashboard</h1>
+            <h1 class="text-center text-primary mb-4">Dashboard</h1>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <!-- Card Thống Kê Số Người Dùng -->
+    <!-- Các Card Thống Kê -->
+    <div class="row text-center mb-5">
+        <!-- Card Người Dùng -->
         <div class="col-md-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
                     <i class="fas fa-users"></i> Người Dùng
                 </div>
-                <div class="card-body text-center">
-                    <h3>1,200</h3>
+                <div class="card-body">
+                    <h3 class="text-dark"><?php echo $total_users; ?></h3>
                     <p>Số lượng người dùng hiện tại</p>
                 </div>
             </div>
         </div>
-
-        <!-- Card Thống Kê Sản Phẩm -->
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <i class="fas fa-box"></i> Sản Phẩm
-                </div>
-                <div class="card-body text-center">
-                    <h3>150</h3>
-                    <p>Sản phẩm hiện có trong kho</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card Thống Kê Đơn Hàng -->
+        <!-- Card Đơn Hàng -->
         <div class="col-md-4">
             <div class="card shadow-sm">
                 <div class="card-header bg-warning text-white">
                     <i class="fas fa-cart-arrow-down"></i> Đơn Hàng
                 </div>
-                <div class="card-body text-center">
-                    <h3>300</h3>
+                <div class="card-body">
+                    <h3 class="text-dark"><?php echo $totalOrders; ?></h3>
                     <p>Tổng số đơn hàng đã đặt</p>
+                </div>
+            </div>
+        </div>
+        <!-- Card Tổng Doanh Thu -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-dollar-sign"></i> Tổng Doanh Thu
+                </div>
+                <div class="card-body">
+                    <h3 class="text-dark"><?php echo number_format($totalRevenue); ?> VND</h3>
+                    <p>Doanh thu từ tất cả các ngày</p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Biểu đồ thống kê -->
-    <div class="row mt-5">
+    <div class="row">
         <div class="col-md-12">
-            <div class="card">
+            <div class="card shadow-sm">
                 <div class="card-header bg-info text-white">
-                    <i class="fas fa-chart-line"></i> Biểu đồ Thống Kê
+                    <i class="fas fa-chart-line"></i> Biểu đồ Thống Kê Doanh Thu
                 </div>
                 <div class="card-body">
-                    <canvas id="myChart"></canvas>
+                    <canvas id="revenueChart"></canvas>
                 </div>
             </div>
         </div>
@@ -68,37 +104,59 @@
 </div>
 
 <?php
-    require_once('layout/footer.php');
+require_once('layout/footer.php');
 ?>
 
-<!-- Liên kết với các thư viện cần thiết -->
+<!-- Liên kết thư viện Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Biểu đồ thống kê
-    var ctx = document.getElementById('myChart').getContext('2d');
-    var myChart = new Chart(ctx, {
-        type: 'line', // Chọn loại biểu đồ (line, bar, pie, ...)
+    // Biểu đồ doanh thu
+    const days = <?php echo $days ?: '[]'; ?>;
+    const revenues = <?php echo $revenues ?: '[]'; ?>;
+
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line', // Đổi loại biểu đồ sang 'line'
         data: {
-            labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5'], // Các tháng
+            labels: days,
             datasets: [{
-                label: 'Doanh Thu',
-                data: [1200, 1900, 3000, 5000, 2500], // Dữ liệu
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
+                label: 'Doanh Thu (VND)',
+                data: revenues,
+                borderColor: 'rgba(54, 162, 235, 1)', // Màu đường kẻ
+                backgroundColor: 'rgba(54, 162, 235, 0.2)', // Màu nền dưới đường
+                borderWidth: 2, // Độ dày đường
+                tension: 0.4 // Độ cong của đường
             }]
         },
         options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                title: {
+                    display: true,
+                    text: 'Thống Kê Doanh Thu Theo Ngày',
+                    font: {
+                        size: 18,
+                        weight: 'bold'
+                    }
+                }
+            },
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString(); // Định dạng số kiểu VND
+                        }
+                    }
                 }
             }
         }
     });
 </script>
 
-<!-- Liên kết Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php
+    require_once('layout/footer.php');
+?>

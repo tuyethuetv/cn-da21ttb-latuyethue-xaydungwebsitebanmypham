@@ -1,5 +1,5 @@
 <?php
-    $title = 'Quản Lý Phản Hồi';
+$title = 'Quản Lý Phản Hồi';
     $baseUrl = '../';
     require_once('../layout/header.php');
 
@@ -9,7 +9,7 @@
 
 <div class="row" style="margin-top: 20px;">
 	<div class="col-md-12 table-responsive">
-		<h3>Quản Lý Phản Hồi</h3>
+		<h1 class="text-center text-primary mb-4">Quản Lý Phản Hồi</h1> 
 
 		<table class="table table-bordered table-hover" style="margin-top: 20px;">
 			<thead>

@@ -13,97 +13,178 @@ $sql = "SELECT r.*, u.fullname FROM reviews r JOIN user u ON r.user_id = u.id WH
 $reviews = executeResult($sql);
 
 $lastestItems = executeResult($sql);
+
+// Lưu sản phẩm vừa xem vào session
+if (!isset($_SESSION['viewed_products'])) {
+	$_SESSION['viewed_products'] = [];
+}
+
+// Kiểm tra xem sản phẩm hiện tại đã có trong danh sách chưa
+if (!in_array($productId, $_SESSION['viewed_products'])) {
+	array_unshift($_SESSION['viewed_products'], $productId); // Thêm vào đầu danh sách
+	if (count($_SESSION['viewed_products']) > 5) { // Giới hạn danh sách 5 sản phẩm
+		array_pop($_SESSION['viewed_products']);
+	}
+}
+$viewedProducts = [];
+if (isset($_SESSION['viewed_products']) && count($_SESSION['viewed_products']) > 0) {
+	$viewedIds = implode(',', $_SESSION['viewed_products']);
+	$sql = "SELECT * FROM product WHERE id IN ($viewedIds)";
+	$viewedProducts = executeResult($sql);
+}
+// Lấy danh sách sản phẩm tương tự
+$sql = "SELECT * FROM product WHERE category_id = $category_id AND id != $productId ORDER BY updated_at DESC LIMIT 0, 4";
+$similarProducts = executeResult($sql);
+
 ?>
 <style type="text/css">
-.review-form {
-    max-width: 700px; /* Tăng chiều rộng tối đa */
-    margin: 30px auto;
-    padding: 30px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-    font-family: Arial, sans-serif;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+	.review-form {
+		max-width: 700px;
+		/* Tăng chiều rộng tối đa */
+		margin: 30px auto;
+		padding: 30px;
+		background-color: #f9f9f9;
+		border-radius: 10px;
+		box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+		font-family: Arial, sans-serif;
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
 
-.review-form:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-}
+	.review-form:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+	}
 
-.review-form .form-group {
-    margin-bottom: 20px;
-}
+	.review-form .form-group {
+		margin-bottom: 20px;
+	}
 
-.review-form label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 8px;
-    font-size: 16px;
-    color: #333;
-}
+	.review-form label {
+		font-weight: bold;
+		display: block;
+		margin-bottom: 8px;
+		font-size: 16px;
+		color: #333;
+	}
 
-.review-form select,
-.review-form textarea {
-    width: 100%;
-    padding: 15px; /* Tăng padding để nội dung thoáng hơn */
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 16px;
-    background-color: #fff;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
+	.review-form select,
+	.review-form textarea {
+		width: 100%;
+		padding: 15px;
+		/* Tăng padding để nội dung thoáng hơn */
+		border: 1px solid #ccc;
+		border-radius: 8px;
+		font-size: 16px;
+		background-color: #fff;
+		transition: border-color 0.3s ease, box-shadow 0.3s ease;
+	}
 
-.review-form select:focus,
-.review-form textarea:focus {
-    border-color: rgb(255, 0, 170);
-    box-shadow: 0 0 10px rgba(255, 0, 170, 0.7);
-    outline: none;
-}
+	.review-form select:focus,
+	.review-form textarea:focus {
+		border-color: rgb(255, 0, 170);
+		box-shadow: 0 0 10px rgba(255, 0, 170, 0.7);
+		outline: none;
+	}
 
-.review-form .star-rating {
-    display: flex;
-    justify-content: center;
-    gap: 15px; /* Tăng khoảng cách giữa các ngôi sao */
-    margin-bottom: 20px;
-}
+	.review-form .star-rating {
+		display: flex;
+		justify-content: center;
+		gap: 15px;
+		/* Tăng khoảng cách giữa các ngôi sao */
+		margin-bottom: 20px;
+	}
 
-.review-form .star {
-    font-size: 30px; /* Tăng kích thước sao */
-    cursor: pointer;
-    color: #ccc;
-    transition: color 0.3s ease, transform 0.3s ease;
-}
+	.review-form .star {
+		font-size: 30px;
+		/* Tăng kích thước sao */
+		cursor: pointer;
+		color: #ccc;
+		transition: color 0.3s ease, transform 0.3s ease;
+	}
 
-.review-form .star.selected,
-.review-form .star:hover {
-    color: rgb(255, 0, 170);
-    transform: scale(1.3); /* Phóng to sao khi chọn hoặc hover */
-}
+	.review-form .star.selected,
+	.review-form .star:hover {
+		color: rgb(255, 0, 170);
+		transform: scale(1.3);
+		/* Phóng to sao khi chọn hoặc hover */
+	}
 
-.review-form button {
-    width: 100%;
-    padding: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    background-color: rgb(255, 0, 170);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
+	.review-form button {
+		width: 100%;
+		padding: 15px;
+		font-size: 18px;
+		font-weight: bold;
+		background-color: rgb(255, 0, 170);
+		color: #fff;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+	}
 
-.review-form button:hover {
-    background-color: rgb(220, 0, 150);
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+	.review-form button:hover {
+		background-color: rgb(220, 0, 150);
+		transform: translateY(-3px);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	}
 
-.review-form button:active {
-    transform: translateY(0);
-    box-shadow: none;
-}
+	.review-form button:active {
+		transform: translateY(0);
+		box-shadow: none;
+	}
+
+	.card {
+		border: 1px solid #ff69b4;
+		/* Viền màu hồng */
+		border-radius: 8px;
+		overflow: hidden;
+		background-color: #ffe6f2;
+		/* Nền hồng nhạt */
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
+
+	.card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 8px 15px rgba(255, 105, 180, 0.3);
+		/* Hiệu ứng hồng khi hover */
+	}
+
+	.card-img-top {
+		border-bottom: 2px solid #ff69b4;
+		/* Viền ảnh màu hồng */
+		height: 150px;
+		object-fit: cover;
+	}
+
+	.card-title {
+		font-weight: bold;
+		color: #ff69b4;
+		/* Tiêu đề màu hồng đậm */
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+	}
+
+	.card-text {
+		color: #d63384;
+		/* Giá màu hồng đậm */
+		font-size: 14px;
+	}
+
+	.btn-primary {
+		background-color: #ff69b4;
+		/* Nút màu hồng */
+		border-color: #ff69b4;
+		color: white;
+		font-size: 14px;
+		font-weight: bold;
+	}
+
+	.btn-primary:hover {
+		background-color: #ff1493;
+		/* Nút hồng đậm khi hover */
+		border-color: #ff1493;
+	}
 </style>
 <div class="container" style="margin-top: 20px; margin-bottom: 20px;">
 	<div class="row">
@@ -156,9 +237,13 @@ $lastestItems = executeResult($sql);
 			<button class="btn" style="background-color: #ff69b4;color: white;margin-top: 20px; width: 100%; border-radius: 0px; font-size: 30px;" onclick="addCart(<?= $product['id'] ?>, $('[name=num]').val())">
 				<i class="bi bi-cart-plus-fill"></i> THÊM VÀO GIỎ HÀNG
 			</button>
-			<button class="btn btn-secondary" style="margin-top: 20px; width: 100%; border-radius: 0px; font-size: 30px; background-color: #edebeb; border: solid #edebeb 1px; color: black;">
+			<button
+				class="btn btn-secondary"
+				style="margin-top: 20px; width: 100%; border-radius: 0px; font-size: 30px; background-color: #edebeb; border: solid #edebeb 1px; color: black;"
+				onclick="addToFavorites(<?= $product['id'] ?>)">
 				<i class="bi bi-bookmark-heart-fill"></i> THÊM MỤC YÊU THÍCH
 			</button>
+
 		</div>
 		<div class="col-md-12" style="margin-top: 20px; margin-bottom: 30px;">
 			<h2>Chi Tiết Sản Phẩm</h2>
@@ -168,7 +253,7 @@ $lastestItems = executeResult($sql);
 			</div>
 		</div>
 		<div class="col-md-12">
-			<h3>Đánh giá sản phẩm</h3>
+			<h2>Đánh giá sản phẩm</h2>
 			<?php foreach ($reviews as $review): ?>
 				<div style="border-bottom: 1px solid #ddd; padding: 10px 0;">
 					<strong><?= htmlspecialchars($review['fullname']) ?></strong>
@@ -201,6 +286,44 @@ $lastestItems = executeResult($sql);
 			<input type="hidden" name="product_id" value="<?= $productId ?>">
 			<button type="submit">Gửi đánh giá</button>
 		</form>
+		<?php if (count($viewedProducts) > 0): ?>
+			<div class="col-md-12" style="margin-top: 20px;">
+				<h2>Sản phẩm bạn vừa xem</h2>
+				<div class="row">
+					<?php foreach ($viewedProducts as $item): ?>
+						<div class="col-md-3">
+							<div class="card" style="margin-bottom: 20px;">
+								<img src="<?= $item['thumbnail'] ?>" class="card-img-top" alt="<?= htmlspecialchars($item['title']) ?>">
+								<div class="card-body">
+									<h5 class="card-title"><?= htmlspecialchars($item['title']) ?></h5>
+									<p class="card-text"><?= number_format($item['discount']) ?> VND</p>
+									<a href="detail.php?id=<?= $item['id'] ?>" class="btn btn-primary btn-sm">Xem chi tiết</a>
+								</div>
+							</div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			</div>
+		<?php endif; ?>
+		<?php if (count($similarProducts) > 0): ?>
+			<div class="col-md-12" style="margin-top: 20px;">
+				<h2>Sản phẩm tương tự</h2>
+				<div class="row">
+					<?php foreach ($similarProducts as $item): ?>
+						<div class="col-md-3">
+							<div class="card" style="margin-bottom: 20px;">
+								<img src="<?= $item['thumbnail'] ?>" class="card-img-top" alt="<?= htmlspecialchars($item['title']) ?>">
+								<div class="card-body">
+									<h5 class="card-title"><?= htmlspecialchars($item['title']) ?></h5>
+									<p class="card-text"><?= number_format($item['discount']) ?> VND</p>
+									<a href="detail.php?id=<?= $item['id'] ?>" class="btn btn-primary btn-sm">Xem chi tiết</a>
+								</div>
+							</div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			</div>
+		<?php endif; ?>
 
 		<script>
 			const stars = document.querySelectorAll('.star');
@@ -233,6 +356,32 @@ $lastestItems = executeResult($sql);
 		$('[name=num]').val(Math.abs($('[name=num]').val()))
 	}
 </script>
+<script>
+	function addToFavorites(productId) {
+		fetch('add_to_favorites.php', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					product_id: productId
+				})
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					alert("Đã thêm sản phẩm vào mục yêu thích!");
+				} else {
+					alert("Lỗi: " + data.message);
+				}
+			})
+			.catch(error => {
+				console.error('Error:', error);
+				alert("Đã xảy ra lỗi, vui lòng thử lại!");
+			});
+	}
+</script>
+
 <?php
 require_once('layouts/footer.php');
 ?>
